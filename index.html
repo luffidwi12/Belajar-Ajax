@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CRUD Ajax</title>
+</head>
+<body>
+	<h2>Product List</h2>
+	<table style="width:80%;text-align: left;">
+		<thead>
+			<tr>
+				<th>id_barang</th>
+				<th>Name</th>
+				<th>Description</th>
+				<th>Created</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody id="load-data-here">
+			
+		</tbody>
+	</table>
+
+	<h2>Insert Data / Update Data</h2>
+	<table>
+		<tr>
+			<td>Id Barang</td>
+			<td>:</td>
+			<td><input type="text" name="id_barang" disabled="disabled"></td>
+		</tr>
+		<tr>
+			<td>Name</td>
+			<td>:</td>
+			<td><input type="text" name="name"></td>
+		</tr>
+		<tr>
+			<td>Description</td>
+			<td>:</td>
+			<td><input type="text" name="description"></td>
+		</tr>
+		<tr>
+			<td>Created</td>
+			<td>:</td>
+			<td><input type="date" name="created"></td>
+		</tr>
+
+		<tr>
+			<td></td>
+			<td></td>
+			<td>
+				<button onclick="insertData()">Insert Data</button>
+				<button onclick="updateData()">Update Data</button>
+				<button onclick="deleteData()">Delete Data</button>
+			</td>
+		</tr>
+		<tr>
+			<td></td>
+			<td></td>
+			<td id="errorMessageHere"></td>
+		</tr>
+	</table>
+<script type="text/javascript" src="script/jquery.js"></script>
+<script type="text/javascript">
+
+	loadData();
+
+	$(document).on("click",".selectData",function(){
+		var id_barang = $(this).attr("id");
+
+		$.ajax({
+			type: "POST",
+			data: "id_barang="+id_barang,
+			url: "doGetDataBarang.php",
+			success: function(result){
+				var resultObj = JSON.parse(result);
+				
+				$("[name='id_barang']").val(resultObj.id_barang);
+				$("[name='name']").val(resultObj.name);
+				$("[name='description']").val(resultObj.description);
+				$("[name='created']").val(resultObj.created);
+			}
+		});
+	});
+
+	function deleteData(){
+		var id_barang = $("[name='id_barang']").val();
+		$.ajax({
+			type: "POST",
+			data: "id_barang="+id_barang,
+			url: "doDeleteData.php",
+			success: function(result){
+				loadData();
+			}
+		});
+	}
+
+	function updateData(){
+		var id_barang = $("[name='id_barang']").val();
+		var name = $("[name='name']").val();
+		var description = $("[name='description']").val();
+		var created = $("[name='created']").val();
+
+		$.ajax({
+			type: "POST",
+			data: "id_barang="+id_barang+"&name="+name+"&description="+description+"&created="+created,
+			url: "doUpdateData.php",
+			success: function(result){
+				var resultObj = JSON.parse(result);
+				$("#errorMessageHere").html(resultObj.message);
+
+				loadData();
+			}
+		});
+	}
+
+	function insertData(){
+		var name = $("[name='name']").val();
+		var description = $("[name='description']").val();
+		var created = $("[name='created']").val();
+
+		$.ajax({
+			type: "POST",
+			data: "name="+name+"&description="+description+"&created="+created,
+			url: "doInsert.php",
+			success: function(result){
+				var resultObj = JSON.parse(result);
+				$("#errorMessageHere").html(resultObj.message);
+
+				loadData();
+			}
+		});
+	}
+	
+	function loadData(){
+		var dataHandler = $("#load-data-here");
+		dataHandler.html("");
+
+		$.ajax({
+		type: "GET",
+		data: "",
+		url: "doGetData.php",
+		success: function(result){
+			var resultObj = JSON.parse(result);
+			
+
+			$.each(resultObj,function(key,val){
+				var newRow = $("<tr>");
+				newRow.html("<td>"+val.id_barang+"</td><td>"+val.name+"</td><td>"+val.description+"</td><td>"+val.created+"</td><td><button class='selectData' id='"+val.id_barang+"'>Select</button></td>");
+
+				dataHandler.append(newRow);
+			});
+		}
+	});
+
+}
+	
+
+</script>
+</body>
+</html>
